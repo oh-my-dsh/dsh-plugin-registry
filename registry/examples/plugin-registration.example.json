@@ -1,0 +1,71 @@
+{
+  "$schema": "../schema/plugin-registration.schema.json",
+  "schemaVersion": 2,
+  "plugin": {
+    "id": "alice/web-search",
+    "displayName": "Alice DSH Web Search",
+    "repository": "https://github.com/alice/dsh-web-search",
+    "package": "@alice/dsh-web-search",
+    "release": "1.0.0",
+    "status": "active"
+  },
+  "source": {
+    "commit": "0123456789abcdef0123456789abcdef01234567",
+    "namingManifest": "dsh-plugin.naming.json"
+  },
+  "compatibility": {
+    "harness": {
+      "min": "0.1.2-alpha.2",
+      "maxExclusive": "0.2.0"
+    }
+  },
+  "claims": {
+    "pluginNames": ["web-search"],
+    "loaderIds": [
+      {
+        "name": "alice-web-search",
+        "composition": "root",
+        "layer": 0,
+        "overrideIntent": "none"
+      }
+    ],
+    "services": [
+      { "name": "aliceWebSearchIndex", "scope": "root" }
+    ],
+    "tools": [
+      { "name": "alice_web_search_query", "scope": "agent" }
+    ],
+    "commands": [
+      { "name": "alice-web-search-refresh", "scope": "root" }
+    ],
+    "skills": [
+      {
+        "name": "alice-web-search",
+        "scope": "root",
+        "provider": "alice-web-search-filesystem",
+        "rank": 0
+      }
+    ],
+    "skillProviders": [
+      { "name": "alice-web-search-filesystem", "scope": "root" }
+    ],
+    "events": [
+      {
+        "name": "alice-web-search/ready",
+        "scope": "root",
+        "role": "publisher",
+        "schema": "urn:alice:web-search:ready:v1"
+      }
+    ],
+    "settingsNamespaces": [
+      { "name": "alice-web-search", "scope": "root" }
+    ],
+    "routes": [
+      {
+        "kind": "exact",
+        "path": "/api/plugins/alice-web-search/query",
+        "scope": "root"
+      }
+    ]
+  }
+}

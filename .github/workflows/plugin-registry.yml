@@ -1,0 +1,57 @@
+name: plugin-registry
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - registry/**
+      - discovery/**
+      - package.json
+      - scripts/plugin-registry.mjs
+      - scripts/plugin-registry.check.mjs
+      - scripts/discover-plugins.mjs
+      - scripts/discover-plugins.check.mjs
+      - .github/actions/check-plugin-conflicts/**
+      - .github/workflows/discover-plugins.yml
+      - .github/workflows/plugin-registry.yml
+  pull_request:
+    paths:
+      - registry/**
+      - discovery/**
+      - package.json
+      - scripts/plugin-registry.mjs
+      - scripts/plugin-registry.check.mjs
+      - scripts/discover-plugins.mjs
+      - scripts/discover-plugins.check.mjs
+      - .github/actions/check-plugin-conflicts/**
+      - .github/workflows/discover-plugins.yml
+      - .github/workflows/plugin-registry.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: plugin-registry-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Smoke test conflict Action
+        uses: ./.github/actions/check-plugin-conflicts
+        with:
+          manifest: registry/examples/plugin-registration.example.json
+          registry-index: registry/index.json
+      - name: Test registry behavior
+        run: npm test
+      - name: Validate entries and generated index
+        run: node scripts/plugin-registry.mjs validate --check-index --verify-sources --format github
