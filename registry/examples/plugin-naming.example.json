@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "policy": "dsh-plugin-naming/v1",
+  "plugin": {
+    "namespace": "alice",
+    "name": "web-search",
+    "coordinate": "alice/web-search",
+    "packageName": "@alice/dsh-web-search"
+  },
+  "names": {
+    "pluginNames": ["web-search"],
+    "loaderIds": ["alice-web-search"],
+    "services": ["aliceWebSearchIndex"],
+    "tools": ["alice_web_search_query"],
+    "commands": ["alice-web-search-refresh"],
+    "skills": ["alice-web-search"],
+    "skillProviders": ["alice-web-search-filesystem"],
+    "events": ["alice-web-search/ready"],
+    "settingsNamespaces": ["alice-web-search"],
+    "routes": [
+      { "kind": "exact", "path": "/api/plugins/alice-web-search/query" }
+    ]
+  }
+}

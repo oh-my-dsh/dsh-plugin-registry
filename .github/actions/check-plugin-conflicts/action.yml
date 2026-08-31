@@ -1,0 +1,38 @@
+name: Check DSH plugin conflicts
+description: Check a DSH plugin registration manifest against the community registry
+
+inputs:
+  manifest:
+    description: Path to the plugin registration manifest in the caller repository
+    required: false
+    default: dsh-plugin.registry.json
+  registry-url:
+    description: Optional JSON index URL; defaults to registry/index.json from this Action repository
+    required: false
+    default: ''
+  registry-ref:
+    description: Registry data ref used when registry-url is empty
+    required: false
+    default: main
+  registry-index:
+    description: Optional local registry index path; takes precedence over registry-url
+    required: false
+    default: ''
+  strict:
+    description: Fail with exit code 2 when contextual warnings are found; informational notices never block
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Query DSH plugin registry
+      shell: bash
+      env:
+        DSH_REGISTRY_MANIFEST: ${{ inputs.manifest }}
+        DSH_REGISTRY_URL: ${{ inputs.registry-url }}
+        DSH_REGISTRY_INDEX: ${{ inputs.registry-index }}
+        DSH_REGISTRY_STRICT: ${{ inputs.strict }}
+        DSH_ACTION_REPOSITORY: ${{ github.action_repository }}
+        DSH_REGISTRY_REF: ${{ inputs.registry-ref }}
+      run: node "$GITHUB_ACTION_PATH/check.mjs"

@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/oh-my-dsh/dsh-plugin-registry/main/registry/schema/plugin-registration.schema.json",
+  "title": "DSH plugin registry entry",
+  "description": "A reviewed, source-backed DSH plugin registration. Discovery candidates use a separate schema and never reserve names.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "plugin", "source", "compatibility", "claims"],
+  "properties": {
+    "$schema": { "type": "string", "minLength": 1 },
+    "schemaVersion": { "const": 2 },
+    "plugin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "repository", "package", "status"],
+      "properties": {
+        "id": { "$ref": "#/$defs/coordinate" },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "repository": {
+          "type": "string",
+          "pattern": "^https://github\\.com/[^/]+/[^/]+/?$",
+          "maxLength": 512
+        },
+        "package": { "type": "string", "minLength": 1, "maxLength": 214 },
+        "release": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "status": { "enum": ["active", "deprecated", "archived"] }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "namingManifest"],
+      "properties": {
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "namingManifest": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\u0000-\\u001f\\u007f\\\\]+\\.json$",
+          "maxLength": 512
+        }
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["harness"],
+      "properties": {
+        "harness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["min"],
+          "properties": {
+            "min": { "$ref": "#/$defs/semver" },
+            "maxExclusive": { "$ref": "#/$defs/semver" }
+          }
+        }
+      }
+    },
+    "claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pluginNames",
+        "loaderIds",
+        "services",
+        "tools",
+        "commands",
+        "skills",
+        "skillProviders",
+        "events",
+        "settingsNamespaces",
+        "routes"
+      ],
+      "properties": {
+        "pluginNames": { "$ref": "#/$defs/names" },
+        "loaderIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "composition", "layer", "overrideIntent"],
+            "properties": {
+              "name": { "$ref": "#/$defs/name" },
+              "composition": { "$ref": "#/$defs/scope" },
+              "layer": { "type": "integer", "minimum": 0, "maximum": 1024 },
+              "overrideIntent": { "enum": ["none", "replace"] }
+            }
+          }
+        },
+        "services": { "$ref": "#/$defs/scopedNames" },
+        "tools": { "$ref": "#/$defs/scopedNames" },
+        "commands": { "$ref": "#/$defs/scopedNames" },
+        "skills": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "scope", "provider", "rank"],
+            "properties": {
+              "name": { "$ref": "#/$defs/name" },
+              "scope": { "$ref": "#/$defs/scope" },
+              "provider": { "$ref": "#/$defs/name" },
+              "rank": { "type": "integer", "minimum": -1000000, "maximum": 1000000 }
+            }
+          }
+        },
+        "skillProviders": { "$ref": "#/$defs/scopedNames" },
+        "events": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "scope", "role", "schema"],
+            "properties": {
+              "name": { "$ref": "#/$defs/name" },
+              "scope": { "$ref": "#/$defs/scope" },
+              "role": { "enum": ["publisher", "consumer", "both"] },
+              "schema": {
+                "oneOf": [
+                  { "type": "string", "minLength": 1, "maxLength": 512 },
+                  { "type": "null" }
+                ]
+              }
+            }
+          }
+        },
+        "settingsNamespaces": { "$ref": "#/$defs/scopedNames" },
+        "routes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "path", "scope"],
+            "properties": {
+              "kind": { "enum": ["exact", "prefix", "upgrade"] },
+              "path": {
+                "type": "string",
+                "pattern": "^/[^?#\\s]*[^/?#\\s]$",
+                "maxLength": 256
+              },
+              "scope": { "$ref": "#/$defs/scope" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "coordinate": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*/[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 127
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$",
+      "maxLength": 128
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 192,
+      "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
+    },
+    "names": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/name" }
+    },
+    "scope": {
+      "type": "string",
+      "pattern": "^(?:root|agent|unknown|isolated:[a-z0-9]+(?:-[a-z0-9]+)*)$",
+      "maxLength": 128
+    },
+    "scopedNames": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "scope"],
+        "properties": {
+          "name": { "$ref": "#/$defs/name" },
+          "scope": { "$ref": "#/$defs/scope" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 2,
+  "contract": "dsh-plugin-registry/v2",
+  "source": "registry/entries",
+  "plugins": []
+}

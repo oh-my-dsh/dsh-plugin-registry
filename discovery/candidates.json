@@ -1,0 +1,994 @@
+{
+  "schemaVersion": 1,
+  "kind": "dsh-plugin-discovery-candidates",
+  "generatedAt": "2026-08-30T18:20:37.073Z",
+  "formalRegistryEffect": "none",
+  "notice": "Automated candidates are unreviewed discovery evidence. They do not reserve IDs or participate in conflict blocking.",
+  "selection": {
+    "coveragePercent": 10,
+    "maxResults": 200,
+    "discoveredRepositories": 200,
+    "selectedRepositories": 20,
+    "queryEvidence": [
+      {
+        "source": "repository-search",
+        "query": "topic:dsh topic:dsh-plugin",
+        "totalCount": 4894,
+        "received": 200,
+        "incompleteResults": false
+      },
+      {
+        "source": "repository-search",
+        "query": "topic:deepseek-harness topic:dsh-plugin",
+        "totalCount": 8077,
+        "received": 200,
+        "incompleteResults": false
+      },
+      {
+        "source": "code-search",
+        "query": "\"dsh.bundle\" filename:package.json",
+        "totalCount": 7,
+        "received": 7,
+        "incompleteResults": false
+      }
+    ]
+  },
+  "candidates": [
+    {
+      "repository": "https://github.com/yjh051108/dsh-routing-suite",
+      "fullName": "yjh051108/dsh-routing-suite",
+      "description": "dsh-routing-suite — injector + router-standard kit: install the runtime injector first, then the task-aware reasoning-mode router preset (measured P1-P23).",
+      "stars": 6970,
+      "forks": 140,
+      "archived": false,
+      "pushedAt": "2026-08-28T19:03:44Z",
+      "defaultBranch": "main",
+      "topics": [
+        "ai-agents",
+        "cordis",
+        "deepseek-harness",
+        "dsh",
+        "dsh-plugin"
+      ],
+      "matchedQueries": [
+        "topic:deepseek-harness topic:dsh-plugin",
+        "topic:dsh topic:dsh-plugin"
+      ],
+      "classification": "bundle",
+      "evidence": {
+        "commit": "f753bb1cd793a8e74b01d8fa5ad2c3d87a2e3c30",
+        "rootPackage": {
+          "blobSha": "df92032fff7a779d7e8a63072f4bd92b103c3398",
+          "name": "@dsh-external/dsh-super-injector",
+          "hasDshBundle": true
+        },
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": {
+              "blobSha": "df92032fff7a779d7e8a63072f4bd92b103c3398",
+              "name": "@dsh-external/dsh-super-injector",
+              "hasDshBundle": true
+            },
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/zouyuxuan122/DSH-Desktop-EAC",
+      "fullName": "zouyuxuan122/DSH-Desktop-EAC",
+      "description": "DeepSeek Harness Desktop (dsh-desktop). EAC: Embracing All Creation (揽尽万象). Bundled Node.js runtime with full dsh-CLI kernel, one-click startup, 10 built-in UI themes.",
+      "stars": 1445,
+      "forks": 49,
+      "archived": false,
+      "pushedAt": "2026-08-30T17:35:15Z",
+      "defaultBranch": "main",
+      "topics": [
+        "ai-agent",
+        "deepseek",
+        "deepseek-harness",
+        "desktop",
+        "desktop-app",
+        "dsh",
+        "dsh-plugins",
+        "dshdesktop",
+        "electron",
+        "tauri",
+        "windows"
+      ],
+      "matchedQueries": [
+        "code:\"dsh.bundle\" filename:package.json"
+      ],
+      "classification": "bundle",
+      "evidence": {
+        "commit": "da16f54f1893ff9433e1b2549f80a4f12185f21f",
+        "rootPackage": null,
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "dsh-desktop/assets/plugins/dsh-pet/package.json",
+            "package": {
+              "blobSha": "4f3975633a57ade934d83d4938b2ea7861d28218",
+              "name": "dsh-pet",
+              "hasDshBundle": true
+            },
+            "namingManifest": null,
+            "errors": []
+          },
+          {
+            "path": "package.json",
+            "package": null,
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/PC2005-cloud/dsh-pet",
+      "fullName": "PC2005-cloud/dsh-pet",
+      "description": "DSH 桌面宠物：一行命令装好即用的透明动画小桌宠，支持多开、大小位置随心配置；还内置 DIY 素材链，能用 AI 视频自造专属宠物",
+      "stars": 484,
+      "forks": 31,
+      "archived": false,
+      "pushedAt": "2026-08-29T16:12:52Z",
+      "defaultBranch": "main",
+      "topics": [
+        "deepseek-harness",
+        "desktop-pet",
+        "dsh",
+        "dsh-plugin"
+      ],
+      "matchedQueries": [
+        "code:\"dsh.bundle\" filename:package.json",
+        "topic:deepseek-harness topic:dsh-plugin",
+        "topic:dsh topic:dsh-plugin"
+      ],
+      "classification": "bundle",
+      "evidence": {
+        "commit": "1684514b0f17dde5f2559cfd3298b291ae015a3b",
+        "rootPackage": null,
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "dsh-pet/package.json",
+            "package": {
+              "blobSha": "486df7c1260e6dfa52f158676f2bf6af898dc9cf",
+              "name": "dsh-pet",
+              "hasDshBundle": true
+            },
+            "namingManifest": null,
+            "errors": []
+          },
+          {
+            "path": "package.json",
+            "package": null,
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/feiyang-dev/dsh-usage-plugin",
+      "fullName": "feiyang-dev/dsh-usage-plugin",
+      "description": "DeepSeek Harness 用量与消耗插件（dsh-usage-plugin）—— 每次调用的 token 用量/缓存命中统计、峰谷计费、余额查询、CSV/JSON/PNG 导出，可经桌面端一键安装或命令行 dsh plugin add 安装。",
+      "stars": 35,
+      "forks": 3,
+      "archived": false,
+      "pushedAt": "2026-08-29T15:03:00Z",
+      "defaultBranch": "main",
+      "topics": [
+        "deepseek",
+        "deepseek-harness",
+        "deepseek-v4",
+        "deepseek-v4-pro",
+        "dsh",
+        "dsh-plugin"
+      ],
+      "matchedQueries": [
+        "code:\"dsh.bundle\" filename:package.json"
+      ],
+      "classification": "bundle",
+      "evidence": {
+        "commit": "bf612da3982de7363435534f608b6f6999540d8e",
+        "rootPackage": {
+          "blobSha": "aa74ed8bf1e05b11603cb874f12be06d3b174fa8",
+          "name": "@feiyang666/dsh-usage-plugin",
+          "hasDshBundle": true
+        },
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": {
+              "blobSha": "aa74ed8bf1e05b11603cb874f12be06d3b174fa8",
+              "name": "@feiyang666/dsh-usage-plugin",
+              "hasDshBundle": true
+            },
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/mjw-git/dsh-pet",
+      "fullName": "mjw-git/dsh-pet",
+      "description": "Desktop pet plugin for DeepSeek Harness (dsh) — grows with your agent token usage; XP economy, custom spritesheets, SSE status push, one-command install",
+      "stars": 1,
+      "forks": 0,
+      "archived": false,
+      "pushedAt": "2026-08-27T06:51:29Z",
+      "defaultBranch": "master",
+      "topics": [
+        "ai-companion",
+        "cordis",
+        "deepseek-harness",
+        "desktop-pet",
+        "dsh-plugin"
+      ],
+      "matchedQueries": [
+        "code:\"dsh.bundle\" filename:package.json"
+      ],
+      "classification": "bundle",
+      "evidence": {
+        "commit": "b50d0a3344c2c4eb24801a7e044930080d3d62b9",
+        "rootPackage": {
+          "blobSha": "5d16dcc5c056634e960a07602b3c99a3475517f8",
+          "name": "@dsh-pet/workspace",
+          "hasDshBundle": false
+        },
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": {
+              "blobSha": "5d16dcc5c056634e960a07602b3c99a3475517f8",
+              "name": "@dsh-pet/workspace",
+              "hasDshBundle": false
+            },
+            "namingManifest": null,
+            "errors": []
+          },
+          {
+            "path": "packages/pet/package.json",
+            "package": {
+              "blobSha": "b40856ac4a295f7fa8b71027aba75ca029e8419e",
+              "name": "@dsh-pet/pet",
+              "hasDshBundle": true
+            },
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/AndreasSeidl/dsh-docker",
+      "fullName": "AndreasSeidl/dsh-docker",
+      "description": null,
+      "stars": 0,
+      "forks": 0,
+      "archived": false,
+      "pushedAt": "2026-08-28T13:18:33Z",
+      "defaultBranch": "main",
+      "topics": [],
+      "matchedQueries": [
+        "code:\"dsh.bundle\" filename:package.json"
+      ],
+      "classification": "bundle",
+      "evidence": {
+        "commit": "5485ee43ab7b290d4482f0240ff6ec0100e92455",
+        "rootPackage": null,
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": null,
+            "namingManifest": null,
+            "errors": []
+          },
+          {
+            "path": "test-plugins/dsh-test-bundle/package.json",
+            "package": {
+              "blobSha": "73edaf083829820894f1b02f8a2d4d06cd6e0524",
+              "name": "@dsh-test/bundle-all",
+              "hasDshBundle": true
+            },
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/deepseek-ai/deepseek-harness",
+      "fullName": "deepseek-ai/deepseek-harness",
+      "description": "DeepSeek Harness: Everything is a Plugin.",
+      "stars": 204531,
+      "forks": 23664,
+      "archived": false,
+      "pushedAt": "2026-08-30T13:52:13Z",
+      "defaultBranch": "master",
+      "topics": [
+        "ai-agents",
+        "cordis",
+        "dsh",
+        "dsh-plugin"
+      ],
+      "matchedQueries": [
+        "topic:dsh topic:dsh-plugin"
+      ],
+      "classification": "topical",
+      "evidence": {
+        "commit": "0a53fb55bea101816fa226bb964ae2bed71c343b",
+        "rootPackage": {
+          "blobSha": "768d491cb17631d6858d1ae48a59f191efb5faf3",
+          "name": "@deepseek-ai/dsh-root",
+          "hasDshBundle": false
+        },
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": {
+              "blobSha": "768d491cb17631d6858d1ae48a59f191efb5faf3",
+              "name": "@deepseek-ai/dsh-root",
+              "hasDshBundle": false
+            },
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/nexu-io/open-design",
+      "fullName": "nexu-io/open-design",
+      "description": "🎨 Best DeepSeek Harness Design Plugin. The open-source Claude Design alternative. 🖥️ Local-first desktop app. 🖼️ Your coding agent becomes the design engine: prototypes, landing pages, dashboards, slides, images & video — real files, HTML/PDF/PPTX/MP4 export. 🤖 Claude Code / Codex / Cursor / DeepSeek Harness / OpenCode & 20+ CLIs via BYOK.",
+      "stars": 92798,
+      "forks": 10702,
+      "archived": false,
+      "pushedAt": "2026-08-30T18:06:14Z",
+      "defaultBranch": "main",
+      "topics": [
+        "agent-skills",
+        "ai-design",
+        "byok",
+        "claude-code-for-design",
+        "claude-design",
+        "codex-design",
+        "coding-agents",
+        "cursor-design",
+        "deepseek",
+        "deepseek-harness",
+        "design-systems",
+        "desktop-app",
+        "dsh",
+        "dsh-plugin",
+        "figma-alternative",
+        "hermes-agent",
+        "local-first",
+        "prototyping",
+        "ui-generator",
+        "vibe-coding"
+      ],
+      "matchedQueries": [
+        "topic:deepseek-harness topic:dsh-plugin",
+        "topic:dsh topic:dsh-plugin"
+      ],
+      "classification": "topical",
+      "evidence": {
+        "commit": "df84ae5b9ebfb4d3cee43ed3037667503bcafe36",
+        "rootPackage": {
+          "blobSha": "b7b608cb68122e4c327c63d2494c4f6bf5586689",
+          "name": "open-design",
+          "hasDshBundle": false
+        },
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": {
+              "blobSha": "b7b608cb68122e4c327c63d2494c4f6bf5586689",
+              "name": "open-design",
+              "hasDshBundle": false
+            },
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/esengine/DeepSeek-Reasonix",
+      "fullName": "esengine/DeepSeek-Reasonix",
+      "description": "DeepSeek-native AI coding agent for your terminal. Engineered around prefix-cache stability — leave it running.",
+      "stars": 35265,
+      "forks": 2359,
+      "archived": false,
+      "pushedAt": "2026-08-30T15:28:48Z",
+      "defaultBranch": "main-v2",
+      "topics": [
+        "agent",
+        "agent-framework",
+        "ai-agent",
+        "ai-coding",
+        "cli",
+        "coding-agent",
+        "deepseek",
+        "developer-tools",
+        "dsh",
+        "dsh-plugin",
+        "ink",
+        "llm",
+        "prompt-caching",
+        "r1",
+        "terminal",
+        "tool-use",
+        "tui",
+        "typescript"
+      ],
+      "matchedQueries": [
+        "topic:dsh topic:dsh-plugin"
+      ],
+      "classification": "topical",
+      "evidence": {
+        "commit": "61750da510c449f5926f2a20b5ae9d4a1da04431",
+        "rootPackage": null,
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": null,
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/tt-a1i/archify",
+      "fullName": "tt-a1i/archify",
+      "description": "Agent skill for beautiful, verifiable architecture, workflow, sequence, data-flow, and lifecycle diagrams—self-contained HTML with motion and crisp export.",
+      "stars": 33914,
+      "forks": 2158,
+      "archived": false,
+      "pushedAt": "2026-08-30T15:05:12Z",
+      "defaultBranch": "main",
+      "topics": [
+        "agent-skills",
+        "architecture-as-code",
+        "architecture-diagram",
+        "claude-skill",
+        "code-visualization",
+        "codex",
+        "coding-agents",
+        "data-flow-diagram",
+        "deepseek-harness",
+        "developer-tools",
+        "diagram-as-code",
+        "diagrams",
+        "diagrams-as-code",
+        "dsh-plugin",
+        "mermaid-alternative",
+        "opencode",
+        "sequence-diagram",
+        "software-architecture",
+        "system-design",
+        "text-to-diagram"
+      ],
+      "matchedQueries": [
+        "topic:deepseek-harness topic:dsh-plugin"
+      ],
+      "classification": "topical",
+      "evidence": {
+        "commit": "5de7275fe87a66a19d52a4d9b0b3a4f2a5a90115",
+        "rootPackage": null,
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": null,
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/titanwings/distilly",
+      "fullName": "titanwings/distilly",
+      "description": "Distilly — Distill how they think into reusable Skills for any Agent or Bot. Formerly Colleague Skill（原同事 Skill）.",
+      "stars": 24166,
+      "forks": 2119,
+      "archived": false,
+      "pushedAt": "2026-08-25T07:18:07Z",
+      "defaultBranch": "dot-skill",
+      "topics": [
+        "agent-skills",
+        "agentic-ai",
+        "ai-agent",
+        "ai-agents",
+        "ai-assistants",
+        "ai-persona",
+        "claude-code",
+        "claude-skills",
+        "codex",
+        "codex-skills",
+        "deepseek-harness",
+        "digital-human",
+        "dsh-plugin",
+        "hermes-agent",
+        "knowledge-distillation",
+        "llm-agent",
+        "meta-skill",
+        "openclaw",
+        "opencode"
+      ],
+      "matchedQueries": [
+        "topic:deepseek-harness topic:dsh-plugin"
+      ],
+      "classification": "topical",
+      "evidence": {
+        "commit": "868c293f56116081733b78fc7db5f91634d7b62a",
+        "rootPackage": {
+          "blobSha": "453f911ca9e28a20debeadc03c024817bfc9a2ec",
+          "name": "@titanwings/distilly",
+          "hasDshBundle": false
+        },
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": {
+              "blobSha": "453f911ca9e28a20debeadc03c024817bfc9a2ec",
+              "name": "@titanwings/distilly",
+              "hasDshBundle": false
+            },
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/anywhere-labs/dsh-desktop",
+      "fullName": "anywhere-labs/dsh-desktop",
+      "description": "为 DeepSeek Harness (DSH) 插件生态打造的现代化桌面端解决方案。万物皆「插件」，桌面本身也是「插件」。",
+      "stars": 22067,
+      "forks": 1082,
+      "archived": false,
+      "pushedAt": "2026-08-30T14:54:54Z",
+      "defaultBranch": "master",
+      "topics": [
+        "cordis",
+        "cordis-plugin",
+        "deepseek",
+        "deepseek-harness",
+        "desktop",
+        "dsh",
+        "dsh-plugin",
+        "dsh-plugin-desktop"
+      ],
+      "matchedQueries": [
+        "topic:deepseek-harness topic:dsh-plugin",
+        "topic:dsh topic:dsh-plugin"
+      ],
+      "classification": "topical",
+      "evidence": {
+        "commit": "e71a9ef0b168763d422042835a8c3b7d6d809800",
+        "rootPackage": {
+          "blobSha": "e6b0b9df3c5bd0c370bb6154cef751945a7382bd",
+          "name": "deepseek-harness-desktop",
+          "hasDshBundle": false
+        },
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": {
+              "blobSha": "e6b0b9df3c5bd0c370bb6154cef751945a7382bd",
+              "name": "deepseek-harness-desktop",
+              "hasDshBundle": false
+            },
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/Nagi-ovo/voyager",
+      "fullName": "Nagi-ovo/voyager",
+      "description": "Enhancement suite for Gemini, AI Studio, Claude & ChatGPT — plus a prompt manager for any web UI, DeepSeek Harness included. / 面向 Gemini、AI Studio、Claude 与 ChatGPT 的增强套件；提示词管理器可用于任意 Web UI，含 DeepSeek Harness。",
+      "stars": 19898,
+      "forks": 657,
+      "archived": false,
+      "pushedAt": "2026-08-30T00:15:54Z",
+      "defaultBranch": "main",
+      "topics": [
+        "ai-studio",
+        "browser-extension",
+        "bun",
+        "chat-management",
+        "chatgpt",
+        "chrome-extension",
+        "claude-ai",
+        "dsh",
+        "dsh-plugin",
+        "edge-addon",
+        "firefox-addons",
+        "gemini",
+        "safari-extension"
+      ],
+      "matchedQueries": [
+        "topic:dsh topic:dsh-plugin"
+      ],
+      "classification": "topical",
+      "evidence": {
+        "commit": "51d4f6cd02dab8c794ff76ab9ecd1a27226f5555",
+        "rootPackage": {
+          "blobSha": "75fa017382b69e22e38b21189323cb2516269428",
+          "name": "voyager",
+          "hasDshBundle": false
+        },
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": {
+              "blobSha": "75fa017382b69e22e38b21189323cb2516269428",
+              "name": "voyager",
+              "hasDshBundle": false
+            },
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/walkinglabs/learn-harness-engineering",
+      "fullName": "walkinglabs/learn-harness-engineering",
+      "description": "Harness engineering beginner tutorial, from 0 to 1",
+      "stars": 14531,
+      "forks": 1441,
+      "archived": false,
+      "pushedAt": "2026-08-26T01:08:59Z",
+      "defaultBranch": "main",
+      "topics": [
+        "agent",
+        "agentic",
+        "agentic-ai",
+        "ai",
+        "ai-agent",
+        "ai-agents",
+        "dsh",
+        "dsh-plugin",
+        "harness",
+        "harness-engineering",
+        "harness-framework",
+        "llm"
+      ],
+      "matchedQueries": [
+        "topic:dsh topic:dsh-plugin"
+      ],
+      "classification": "topical",
+      "evidence": {
+        "commit": "77e7a3e21469dcbece2558086c8d91657abeaa40",
+        "rootPackage": {
+          "blobSha": "5891609f7c69e036e782f746b9b72167ca616342",
+          "name": "learn-harness-engineering",
+          "hasDshBundle": false
+        },
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": {
+              "blobSha": "5891609f7c69e036e782f746b9b72167ca616342",
+              "name": "learn-harness-engineering",
+              "hasDshBundle": false
+            },
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/awesome-dsh-plugin/awesome-dsh-plugin",
+      "fullName": "awesome-dsh-plugin/awesome-dsh-plugin",
+      "description": "A curated list of plugins for DeepSeek Harness (dsh) · DeepSeek Harness 插件精选列表",
+      "stars": 13698,
+      "forks": 2366,
+      "archived": false,
+      "pushedAt": "2026-08-30T15:50:30Z",
+      "defaultBranch": "main",
+      "topics": [
+        "awesome",
+        "awesome-list",
+        "deepseek-harness",
+        "dsh",
+        "dsh-plugin"
+      ],
+      "matchedQueries": [
+        "topic:deepseek-harness topic:dsh-plugin",
+        "topic:dsh topic:dsh-plugin"
+      ],
+      "classification": "topical",
+      "evidence": {
+        "commit": "6ffccc6fb1cd0cecdb80639ea8ed0334765903a5",
+        "rootPackage": {
+          "blobSha": "e90109e44d98500660851a2fc5ab9e48026f223b",
+          "name": "awesome-dsh-plugin",
+          "hasDshBundle": false
+        },
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": {
+              "blobSha": "e90109e44d98500660851a2fc5ab9e48026f223b",
+              "name": "awesome-dsh-plugin",
+              "hasDshBundle": false
+            },
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/EverMind-AI/EverOS",
+      "fullName": "EverMind-AI/EverOS",
+      "description": "One portable memory layer for every AI agent: local-first, Markdown-native, user-owned, and self-evolving across apps, tools, and workflows.",
+      "stars": 12564,
+      "forks": 909,
+      "archived": false,
+      "pushedAt": "2026-08-28T06:45:52Z",
+      "defaultBranch": "main",
+      "topics": [
+        "agent-memory",
+        "agentic-ai",
+        "ai",
+        "chats",
+        "clawdbot",
+        "clawdbot-skill",
+        "deepseek-harness",
+        "dsh",
+        "dsh-plugin",
+        "llm",
+        "long-term-memory",
+        "mcp",
+        "memory",
+        "memory-management",
+        "python3",
+        "rag",
+        "skills"
+      ],
+      "matchedQueries": [
+        "topic:deepseek-harness topic:dsh-plugin",
+        "topic:dsh topic:dsh-plugin"
+      ],
+      "classification": "topical",
+      "evidence": {
+        "commit": "d48963cc1ebb5e14bf7b561d55d3ac699396c8c1",
+        "rootPackage": null,
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": null,
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/MemTensor/MemOS",
+      "fullName": "MemTensor/MemOS",
+      "description": "Self-evolving memory OS for LLM & AI Agents: ultra-persistent memory, hybrid-retrieval, and cross-task skill reuse, with 35.24% token savings and DeepSeek Harness support.",
+      "stars": 11092,
+      "forks": 1013,
+      "archived": false,
+      "pushedAt": "2026-08-28T08:35:30Z",
+      "defaultBranch": "main",
+      "topics": [
+        "agent",
+        "agentic-ai",
+        "ai",
+        "ai-agents",
+        "chatgpt",
+        "claude",
+        "deepseek-harness",
+        "dsh-plugin",
+        "hermes",
+        "llm",
+        "long-term-memory",
+        "mcp",
+        "memory",
+        "memory-management",
+        "openclaw",
+        "rag",
+        "self-evolving",
+        "self-hosted",
+        "skills",
+        "token-savings"
+      ],
+      "matchedQueries": [
+        "topic:deepseek-harness topic:dsh-plugin"
+      ],
+      "classification": "topical",
+      "evidence": {
+        "commit": "185ebdb925911b55c13b7efe666b74e2e292e484",
+        "rootPackage": null,
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": null,
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/YaoApp/yao",
+      "fullName": "YaoApp/yao",
+      "description": "✨ All your agents and workspaces in one place, on every device you own. Track tasks on a board, accessible from desktop, mobile, browser, or API. Self-hosted.",
+      "stars": 7844,
+      "forks": 701,
+      "archived": false,
+      "pushedAt": "2026-08-22T15:16:15Z",
+      "defaultBranch": "main",
+      "topics": [
+        "agent-harness",
+        "agent-orchestration",
+        "agent-skills",
+        "agent-workspaces",
+        "ai-agents",
+        "ai-native",
+        "claude-code",
+        "coding-agent",
+        "deepseek",
+        "deepseek-harness",
+        "dsh",
+        "dsh-plugin",
+        "local-first",
+        "mcp",
+        "no-code",
+        "own-your-data",
+        "tool-use"
+      ],
+      "matchedQueries": [
+        "topic:deepseek-harness topic:dsh-plugin",
+        "topic:dsh topic:dsh-plugin"
+      ],
+      "classification": "topical",
+      "evidence": {
+        "commit": "5a3f9a6a7b937464923c0219eed2217fb9ddf34d",
+        "rootPackage": null,
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": null,
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/wxxb789/dsh-raven-research",
+      "fullName": "wxxb789/dsh-raven-research",
+      "description": "Source-grounded deep research, writing, and learning plugin for DeepSeek Harness (dsh): steerable checkpoints, mid-run steering, and citations verified against retrieved sources.",
+      "stars": 2,
+      "forks": 0,
+      "archived": false,
+      "pushedAt": "2026-08-30T12:24:13Z",
+      "defaultBranch": "main",
+      "topics": [
+        "academic-writing",
+        "agentic-ai",
+        "ai-agent",
+        "ai-research",
+        "citation-verification",
+        "citations",
+        "cordis",
+        "deep-research",
+        "deepseek",
+        "deepseek-harness",
+        "dsh",
+        "dsh-plugin",
+        "llm",
+        "llm-agent",
+        "nodejs",
+        "plugin",
+        "rag",
+        "research-agent",
+        "typescript",
+        "writing-assistant"
+      ],
+      "matchedQueries": [
+        "code:\"dsh.bundle\" filename:package.json"
+      ],
+      "classification": "topical",
+      "evidence": {
+        "commit": "605717029ead5c0a840021d23db6868f442e8ce8",
+        "rootPackage": {
+          "blobSha": "a3d2c5b63bd4a20422c2c08608941c603d508aa9",
+          "name": "dsh-raven-research",
+          "hasDshBundle": false
+        },
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": {
+              "blobSha": "a3d2c5b63bd4a20422c2c08608941c603d508aa9",
+              "name": "dsh-raven-research",
+              "hasDshBundle": false
+            },
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    },
+    {
+      "repository": "https://github.com/bthwani2-boop/bthwani-suite-next",
+      "fullName": "bthwani2-boop/bthwani-suite-next",
+      "description": null,
+      "stars": 0,
+      "forks": 0,
+      "archived": false,
+      "pushedAt": "2026-08-30T17:18:47Z",
+      "defaultBranch": "master",
+      "topics": [],
+      "matchedQueries": [
+        "code:\"dsh.bundle\" filename:package.json"
+      ],
+      "classification": "topical",
+      "evidence": {
+        "commit": "298e1087c244c9f5d995464446054aff44b4f6ea",
+        "rootPackage": {
+          "blobSha": "21454a959da79b22816ab9213a52aeb7f0d66ad5",
+          "name": "bthwani-suite-next",
+          "hasDshBundle": false
+        },
+        "namingManifest": null,
+        "pluginPackages": [
+          {
+            "path": "package.json",
+            "package": {
+              "blobSha": "21454a959da79b22816ab9213a52aeb7f0d66ad5",
+              "name": "bthwani-suite-next",
+              "hasDshBundle": false
+            },
+            "namingManifest": null,
+            "errors": []
+          },
+          {
+            "path": "services/dsh/package.json",
+            "package": {
+              "blobSha": "d73a571f1dbe39884cdf60e38c61c87d321bf4be",
+              "name": "@bthwani/dsh",
+              "hasDshBundle": false
+            },
+            "namingManifest": null,
+            "errors": []
+          }
+        ]
+      }
+    }
+  ]
+}
