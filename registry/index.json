@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/oh-my-dsh/dsh-plugin-registry/main/registry/schema/plugin-index.schema.json",
   "schemaVersion": 2,
   "contract": "dsh-plugin-registry/v2",
   "source": "registry/entries",

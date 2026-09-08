@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 
-import { appendFile, mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
+import { appendFile, mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const defaultRegistryRoot = join(repoRoot, 'registry')
-const MAX_REMOTE_INDEX_BYTES = 5 * 1024 * 1024
+const MAX_INDEX_BYTES = 5 * 1024 * 1024
 const MAX_SOURCE_MANIFEST_BYTES = 1024 * 1024
 
 export const REGISTRY_CONTRACT = 'dsh-plugin-registry/v2'
+export const REGISTRY_INDEX_SCHEMA = 'https://raw.githubusercontent.com/oh-my-dsh/dsh-plugin-registry/main/registry/schema/plugin-index.schema.json'
 export const scopedClaimKinds = ['services', 'tools', 'commands', 'skillProviders', 'settingsNamespaces']
 export const searchKinds = [
   'pluginIds',
@@ -25,7 +26,8 @@ export const searchKinds = [
 const coordinatePattern = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*$/
 const namePattern = /^[^\s\u0000-\u001f\u007f]{1,192}$/u
 const scopePattern = /^(?:root|agent|unknown|isolated:[a-z0-9]+(?:-[a-z0-9]+)*)$/
-const sourcePathPattern = /^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$))[^\u0000-\u001f\u007f\\]+\.json$/u
+const sourcePathPattern = /^(?!\/)(?!.*(?:^|\/)\.{1,2}(?:\/|$))(?!.*\/\/)[^\u0000-\u001f\u007f\\?#]+\.json$/u
+const packagePattern = /^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/
 const semverPattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/
 const routeKinds = new Set(['exact', 'prefix', 'upgrade'])
 const pluginStatuses = new Set(['active', 'deprecated', 'archived'])
@@ -54,8 +56,12 @@ function normalizeNewlines(value) {
   return value.replaceAll('\r\n', '\n')
 }
 
+function compareText(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0
+}
+
 function sortedUnique(values) {
-  return [...new Set(values)].sort((left, right) => left.localeCompare(right))
+  return [...new Set(values)].sort(compareText)
 }
 
 function addError(errors, path, message) {
@@ -101,6 +107,16 @@ function checkArray(value, path, errors) {
   return true
 }
 
+function checkSemver(value, path, errors, { optional = false } = {}) {
+  const validString = checkString(value, path, errors, { maxLength: 128, optional })
+  if (!validString) return false
+  if (!parseSemver(value)) {
+    addError(errors, path, 'must be a valid semantic version')
+    return false
+  }
+  return true
+}
+
 function repositoryParts(repository) {
   try {
     const url = new URL(repository)
@@ -114,7 +130,13 @@ function repositoryParts(repository) {
       url.hash
     ) return undefined
     const segments = url.pathname.replace(/^\/|\/$/g, '').split('/')
-    if (segments.length !== 2 || !segments[0] || !segments[1]) return undefined
+    if (
+      segments.length !== 2 ||
+      !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/.test(segments[0]) ||
+      !/^[A-Za-z0-9._-]{1,100}$/.test(segments[1]) ||
+      segments[1] === '.' ||
+      segments[1] === '..'
+    ) return undefined
     return { owner: segments[0].toLowerCase(), repository: segments[1].toLowerCase() }
   } catch {
     return undefined
@@ -126,13 +148,18 @@ function normalizedRepository(repository) {
 }
 
 export function parseSemver(value) {
+  if (typeof value !== 'string') return undefined
   const match = semverPattern.exec(value)
   if (!match) return undefined
+  const prerelease = match[4] ? match[4].split('.') : []
+  if (prerelease.some((identifier) => /^\d+$/.test(identifier) && identifier.length > 1 && identifier.startsWith('0'))) {
+    return undefined
+  }
   return {
-    major: Number(match[1]),
-    minor: Number(match[2]),
-    patch: Number(match[3]),
-    prerelease: match[4] ? match[4].split('.') : [],
+    major: BigInt(match[1]),
+    minor: BigInt(match[2]),
+    patch: BigInt(match[3]),
+    prerelease,
   }
 }
 
@@ -144,8 +171,8 @@ function comparePrerelease(left, right) {
   for (let index = 0; index < length; index += 1) {
     if (left[index] === undefined) return -1
     if (right[index] === undefined) return 1
-    const leftNumber = /^\d+$/.test(left[index]) ? Number(left[index]) : undefined
-    const rightNumber = /^\d+$/.test(right[index]) ? Number(right[index]) : undefined
+    const leftNumber = /^\d+$/.test(left[index]) ? BigInt(left[index]) : undefined
+    const rightNumber = /^\d+$/.test(right[index]) ? BigInt(right[index]) : undefined
     if (leftNumber !== undefined && rightNumber !== undefined && leftNumber !== rightNumber) {
       return leftNumber < rightNumber ? -1 : 1
     }
@@ -211,9 +238,13 @@ function validateClaims(claims, path, errors) {
   }
 
   validateNamedArray(claims.pluginNames, `${path}.pluginNames`, errors)
+  if (Array.isArray(claims.pluginNames) && claims.pluginNames.length === 0) {
+    addError(errors, `${path}.pluginNames`, 'must contain at least one item')
+  }
   for (const kind of scopedClaimKinds) validateScopedArray(claims[kind], `${path}.${kind}`, errors)
 
   if (checkArray(claims.loaderIds, `${path}.loaderIds`, errors)) {
+    if (claims.loaderIds.length === 0) addError(errors, `${path}.loaderIds`, 'must contain at least one item')
     const seen = new Set()
     for (let index = 0; index < claims.loaderIds.length; index += 1) {
       const itemPath = `${path}.loaderIds[${index}]`
@@ -311,7 +342,12 @@ export function validateManifest(manifest, { file = 'manifest', expectedId, allo
   checkUnknownKeys(manifest, topLevel, file, errors)
   if (manifest.schemaVersion !== 2) addError(errors, `${file}.schemaVersion`, 'must be 2')
   if (Object.hasOwn(manifest, '$schema')) checkString(manifest.$schema, `${file}.$schema`, errors)
-  if (allowManifestPath) checkString(manifest.manifestPath, `${file}.manifestPath`, errors)
+  if (allowManifestPath) {
+    checkString(manifest.manifestPath, `${file}.manifestPath`, errors, {
+      pattern: sourcePathPattern,
+      maxLength: 512,
+    })
+  }
 
   if (checkObject(manifest.plugin, `${file}.plugin`, errors)) {
     const path = `${file}.plugin`
@@ -326,8 +362,8 @@ export function validateManifest(manifest, { file = 'manifest', expectedId, allo
     if (parts && namespace && parts.owner !== namespace) {
       addError(errors, `${path}.repository`, `GitHub owner must match plugin namespace ${JSON.stringify(namespace)}`)
     }
-    checkString(manifest.plugin.package, `${path}.package`, errors, { maxLength: 214 })
-    checkString(manifest.plugin.release, `${path}.release`, errors, { maxLength: 128, optional: true })
+    checkString(manifest.plugin.package, `${path}.package`, errors, { pattern: packagePattern, maxLength: 214 })
+    checkSemver(manifest.plugin.release, `${path}.release`, errors, { optional: true })
     if (!pluginStatuses.has(manifest.plugin.status)) addError(errors, `${path}.status`, 'must be active, deprecated, or archived')
   }
 
@@ -347,12 +383,8 @@ export function validateManifest(manifest, { file = 'manifest', expectedId, allo
     if (checkObject(manifest.compatibility.harness, `${path}.harness`, errors)) {
       const harness = manifest.compatibility.harness
       checkUnknownKeys(harness, new Set(['min', 'maxExclusive']), `${path}.harness`, errors)
-      const minOk = checkString(harness.min, `${path}.harness.min`, errors, { pattern: semverPattern, maxLength: 128 })
-      const maxOk = checkString(harness.maxExclusive, `${path}.harness.maxExclusive`, errors, {
-        pattern: semverPattern,
-        maxLength: 128,
-        optional: true,
-      })
+      const minOk = checkSemver(harness.min, `${path}.harness.min`, errors)
+      const maxOk = checkSemver(harness.maxExclusive, `${path}.harness.maxExclusive`, errors, { optional: true })
       if (minOk && maxOk && compareSemver(harness.min, harness.maxExclusive) >= 0) {
         addError(errors, `${path}.harness.maxExclusive`, 'must be greater than min')
       }
@@ -387,7 +419,7 @@ export async function loadRegistry(registryRoot = defaultRegistryRoot) {
   const records = []
   const identities = new Map()
   for (const file of files) {
-    const entryPath = posixPath(relative(repoRoot, file))
+    const entryPath = `registry/entries/${posixPath(relative(entriesRoot, file))}`
     const expectedId = expectedIdForEntry(entriesRoot, file)
     if (!expectedId) addError(errors, entryPath, 'entry path must be registry/entries/<github-owner>/<plugin-slug>.json')
     let manifest
@@ -416,12 +448,55 @@ function publicManifest(record) {
 }
 
 export function createIndex(records) {
-  return {
+  const index = {
+    $schema: REGISTRY_INDEX_SCHEMA,
     schemaVersion: 2,
     contract: REGISTRY_CONTRACT,
     source: 'registry/entries',
-    plugins: records.map(publicManifest).sort((left, right) => left.plugin.id.localeCompare(right.plugin.id)),
+    plugins: records.map(publicManifest).sort((left, right) => compareText(left.plugin.id, right.plugin.id)),
   }
+  const errors = validateIndex(index)
+  if (errors.length) {
+    throw new Error(`cannot create invalid registry index: ${errors.map((entry) => `${entry.path}: ${entry.message}`).join('; ')}`)
+  }
+  return index
+}
+
+export function validateIndex(index, { file = 'index' } = {}) {
+  const errors = []
+  if (!checkObject(index, file, errors)) return errors
+  checkUnknownKeys(index, new Set(['$schema', 'schemaVersion', 'contract', 'source', 'plugins']), file, errors)
+  if (index.$schema !== undefined && index.$schema !== REGISTRY_INDEX_SCHEMA) {
+    addError(errors, `${file}.$schema`, `must be ${REGISTRY_INDEX_SCHEMA}`)
+  }
+  if (index.schemaVersion !== 2) addError(errors, `${file}.schemaVersion`, 'must be 2')
+  if (index.contract !== REGISTRY_CONTRACT) addError(errors, `${file}.contract`, `must be ${REGISTRY_CONTRACT}`)
+  if (index.source !== 'registry/entries') addError(errors, `${file}.source`, 'must be registry/entries')
+  if (!checkArray(index.plugins, `${file}.plugins`, errors)) return errors
+
+  const identities = new Map()
+  const manifestPaths = new Map()
+  let previousId
+  for (let offset = 0; offset < index.plugins.length; offset += 1) {
+    const path = `${file}.plugins[${offset}]`
+    const plugin = index.plugins[offset]
+    errors.push(...validateManifest(plugin, { file: path, allowManifestPath: true }))
+    const id = plugin?.plugin?.id
+    const manifestPath = plugin?.manifestPath
+    if (typeof id === 'string') {
+      if (identities.has(id)) addError(errors, `${path}.plugin.id`, `duplicates ${identities.get(id)}`)
+      else identities.set(id, `${file}.plugins[${offset}].plugin.id`)
+      if (previousId !== undefined && compareText(id, previousId) < 0) {
+        addError(errors, `${path}.plugin.id`, 'plugins must be sorted by plugin.id')
+      }
+      previousId = id
+    }
+    if (typeof manifestPath === 'string') {
+      if (manifestPaths.has(manifestPath)) addError(errors, `${path}.manifestPath`, `duplicates ${manifestPaths.get(manifestPath)}`)
+      else manifestPaths.set(manifestPath, `${file}.plugins[${offset}].manifestPath`)
+    }
+  }
+  return errors
 }
 
 function scopesOverlap(left, right) {
@@ -533,14 +608,14 @@ export function detectClaimConflicts(plugins) {
         claim: left.display,
         reason,
         plugins: [pluginRef(left.plugin, left.claim), pluginRef(right.plugin, right.claim)]
-          .sort((a, b) => a.id.localeCompare(b.id)),
+          .sort((a, b) => compareText(a.id, b.id)),
       })
     }, { requireHarnessOverlap: kind !== 'packages' })
   }
   return conflicts.sort((left, right) =>
-    left.kind.localeCompare(right.kind) ||
-    left.claim.localeCompare(right.claim) ||
-    left.plugins[0].id.localeCompare(right.plugins[0].id),
+    compareText(left.kind, right.kind) ||
+    compareText(left.claim, right.claim) ||
+    compareText(left.plugins[0].id, right.plugins[0].id),
   )
 }
 
@@ -552,11 +627,55 @@ function sourceUrl(manifest) {
 }
 
 async function readBoundedResponse(response, limit) {
-  const length = Number(response.headers.get('content-length'))
-  if (Number.isFinite(length) && length > limit) throw new Error(`response exceeds ${limit} bytes`)
-  const text = await response.text()
-  if (Buffer.byteLength(text, 'utf8') > limit) throw new Error(`response exceeds ${limit} bytes`)
+  const header = response.headers.get('content-length')
+  let length
+  if (header !== null) {
+    if (!/^\d+$/.test(header)) throw new Error('response has an invalid Content-Length header')
+    length = Number(header)
+    if (!Number.isSafeInteger(length)) throw new Error('response has an invalid Content-Length header')
+  }
+  if (length !== undefined && length > limit) throw new Error(`response exceeds ${limit} bytes`)
+  const decoder = new TextDecoder('utf-8', { fatal: true })
+  let bytes = 0
+  let text = ''
+  const append = (value) => {
+    if (!(value instanceof Uint8Array)) throw new Error('response body yielded a non-byte chunk')
+    bytes += value.byteLength
+    if (bytes > limit) throw new Error(`response exceeds ${limit} bytes`)
+    text += decoder.decode(value, { stream: true })
+  }
+
+  if (response.body && typeof response.body.getReader === 'function') {
+    const reader = response.body.getReader()
+    try {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        append(value)
+      }
+    } catch (error) {
+      await reader.cancel().catch(() => {})
+      throw error
+    } finally {
+      reader.releaseLock()
+    }
+  } else if (response.body && typeof response.body[Symbol.asyncIterator] === 'function') {
+    for await (const value of response.body) {
+      append(value)
+    }
+  } else {
+    throw new Error('response body is not stream-readable; bounded fallback refused')
+  }
+  text += decoder.decode()
   return text
+}
+
+async function readBoundedFile(path, limit) {
+  const details = await stat(path)
+  if (details.size > limit) throw new Error(`response exceeds ${limit} bytes`)
+  const bytes = await readFile(path)
+  if (bytes.byteLength > limit) throw new Error(`response exceeds ${limit} bytes`)
+  return new TextDecoder('utf-8', { fatal: true }).decode(bytes)
 }
 
 function comparableSourceClaimsFromRegistration(manifest) {
@@ -577,21 +696,67 @@ function comparableSourceClaimsFromRegistration(manifest) {
   }
 }
 
-function comparableSourceClaimsFromNaming(manifest, errors, path) {
-  if (!isObject(manifest) || manifest.schemaVersion !== 1 || manifest.policy !== 'dsh-plugin-naming/v1') {
-    addError(errors, path, 'must be a dsh-plugin-naming/v1 manifest')
-    return undefined
+function validateNamingManifest(manifest, path) {
+  const errors = []
+  if (!checkObject(manifest, path, errors)) return errors
+  checkUnknownKeys(manifest, new Set(['$schema', 'schemaVersion', 'policy', 'plugin', 'names']), path, errors)
+  if (Object.hasOwn(manifest, '$schema')) checkString(manifest.$schema, `${path}.$schema`, errors)
+  if (manifest.schemaVersion !== 1) addError(errors, `${path}.schemaVersion`, 'must be 1')
+  if (manifest.policy !== 'dsh-plugin-naming/v1') addError(errors, `${path}.policy`, 'must be dsh-plugin-naming/v1')
+
+  if (checkObject(manifest.plugin, `${path}.plugin`, errors)) {
+    const pluginPath = `${path}.plugin`
+    checkUnknownKeys(manifest.plugin, new Set(['namespace', 'name', 'coordinate', 'packageName']), pluginPath, errors)
+    const namespaceOk = checkString(manifest.plugin.namespace, `${pluginPath}.namespace`, errors, {
+      pattern: /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/,
+      maxLength: 63,
+    })
+    const nameOk = checkString(manifest.plugin.name, `${pluginPath}.name`, errors, {
+      pattern: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      maxLength: 63,
+    })
+    checkString(manifest.plugin.coordinate, `${pluginPath}.coordinate`, errors, { pattern: coordinatePattern, maxLength: 127 })
+    checkString(manifest.plugin.packageName, `${pluginPath}.packageName`, errors, { pattern: packagePattern, maxLength: 214 })
+    if (namespaceOk && nameOk && manifest.plugin.coordinate !== `${manifest.plugin.namespace}/${manifest.plugin.name}`) {
+      addError(errors, `${pluginPath}.coordinate`, 'must match namespace and name')
+    }
   }
-  if (!isObject(manifest.plugin) || !isObject(manifest.names)) {
-    addError(errors, path, 'must contain plugin and names objects')
-    return undefined
-  }
+
+  if (!checkObject(manifest.names, `${path}.names`, errors)) return errors
+  checkUnknownKeys(manifest.names, new Set(sourceSurfaceNames), `${path}.names`, errors)
+  let arraysOk = true
   for (const surface of sourceSurfaceNames) {
     if (!Array.isArray(manifest.names[surface])) {
       addError(errors, `${path}.names.${surface}`, 'must be an array')
-      return undefined
+      arraysOk = false
     }
   }
+  if (!arraysOk) return errors
+  for (const surface of sourceSurfaceNames.filter((name) => name !== 'routes')) {
+    validateNamedArray(manifest.names[surface], `${path}.names.${surface}`, errors)
+  }
+  const routes = manifest.names.routes
+  const seenRoutes = new Set()
+  for (let offset = 0; offset < routes.length; offset += 1) {
+    const routePath = `${path}.names.routes[${offset}]`
+    const route = routes[offset]
+    if (!checkObject(route, routePath, errors)) continue
+    checkUnknownKeys(route, new Set(['kind', 'path']), routePath, errors)
+    if (!routeKinds.has(route.kind)) addError(errors, `${routePath}.kind`, 'must be exact, prefix, or upgrade')
+    const validPath = checkString(route.path, `${routePath}.path`, errors, {
+      pattern: /^\/[^?#\s]*[^/?#\s]$/,
+      maxLength: 256,
+    })
+    if (validPath && routeKinds.has(route.kind)) {
+      const key = `${route.kind}\u0000${route.path}`
+      if (seenRoutes.has(key)) addError(errors, routePath, 'duplicates the same route kind and path')
+      seenRoutes.add(key)
+    }
+  }
+  return errors
+}
+
+function comparableSourceClaimsFromNaming(manifest) {
   return {
     plugin: {
       coordinate: manifest.plugin.coordinate,
@@ -633,8 +798,10 @@ export async function verifyManifestSource(manifest, { fetchImpl = fetch, timeou
     addError(errors, `${file}.source`, `cannot parse pinned naming manifest: ${error.message}`)
     return errors
   }
-  const comparable = comparableSourceClaimsFromNaming(naming, errors, `${file}.source.namingManifest`)
-  if (!comparable) return errors
+  const namingPath = `${file}.source.namingManifest`
+  errors.push(...validateNamingManifest(naming, namingPath))
+  if (errors.length) return errors
+  const comparable = comparableSourceClaimsFromNaming(naming)
   if (comparable.plugin.coordinate !== manifest.plugin.id) {
     addError(errors, `${file}.source.namingManifest.plugin.coordinate`, 'does not match plugin.id')
   }
@@ -671,34 +838,29 @@ export async function validateRegistry({ registryRoot = defaultRegistryRoot, che
   return { errors, conflicts: detectClaimConflicts(index.plugins), index }
 }
 
-export async function readIndexSource({ indexPath, registryUrl } = {}) {
+export async function readIndexSource({ indexPath, registryUrl, fetchImpl = fetch, timeoutMs = 10_000 } = {}) {
   let text
   if (indexPath) {
-    text = await readFile(resolve(indexPath), 'utf8')
+    text = await readBoundedFile(resolve(indexPath), MAX_INDEX_BYTES)
   } else {
     if (!registryUrl) throw new Error('provide --index or --registry-url')
-    const response = await fetch(registryUrl, {
+    const response = await fetchImpl(registryUrl, {
       headers: { accept: 'application/json', 'user-agent': 'dsh-plugin-conflict-check' },
-      signal: AbortSignal.timeout(10_000),
+      redirect: 'error',
+      signal: AbortSignal.timeout(timeoutMs),
     })
     if (!response.ok) throw new Error(`registry request failed: HTTP ${response.status} ${response.statusText}`)
-    text = await readBoundedResponse(response, MAX_REMOTE_INDEX_BYTES)
+    text = await readBoundedResponse(response, MAX_INDEX_BYTES)
   }
   const index = JSON.parse(text)
-  if (index?.schemaVersion !== 2 || index?.contract !== REGISTRY_CONTRACT || !Array.isArray(index.plugins)) {
-    throw new Error(`registry index must use ${REGISTRY_CONTRACT}`)
-  }
-  for (let offset = 0; offset < index.plugins.length; offset += 1) {
-    const errors = validateManifest(index.plugins[offset], {
-      file: `index.plugins[${offset}]`,
-      allowManifestPath: true,
-    })
-    if (errors.length) throw new Error(errors.map((entry) => `${entry.path}: ${entry.message}`).join('; '))
-  }
+  const errors = validateIndex(index)
+  if (errors.length) throw new Error(errors.map((entry) => `${entry.path}: ${entry.message}`).join('; '))
   return index
 }
 
 export async function checkManifestAgainstIndex(manifest, index, { file = 'manifest' } = {}) {
+  const indexErrors = validateIndex(index)
+  if (indexErrors.length) throw new Error(indexErrors.map((entry) => `${entry.path}: ${entry.message}`).join('; '))
   const errors = validateManifest(manifest, { file })
   if (errors.length) return { candidate: manifest?.plugin?.id, errors, conflicts: [] }
   const candidateId = manifest.plugin.id

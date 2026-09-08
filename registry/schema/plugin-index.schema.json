@@ -1,57 +1,82 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/oh-my-dsh/dsh-plugin-registry/main/registry/schema/plugin-registration.schema.json",
-  "title": "DSH plugin registry entry",
-  "description": "A reviewed, source-backed DSH plugin registration. Discovery candidates use a separate schema and never reserve names.",
+  "$id": "https://raw.githubusercontent.com/oh-my-dsh/dsh-plugin-registry/main/registry/schema/plugin-index.schema.json",
+  "title": "DSH plugin registry index",
+  "description": "The deterministic public index generated from reviewed dsh-plugin-registry/v2 entries.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "plugin", "source", "compatibility", "claims"],
+  "required": ["schemaVersion", "contract", "source", "plugins"],
   "properties": {
-    "$schema": { "type": "string", "minLength": 1 },
-    "schemaVersion": { "const": 2 },
-    "plugin": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "repository", "package", "status"],
-      "properties": {
-        "id": { "$ref": "#/$defs/coordinate" },
-        "displayName": { "type": "string", "minLength": 1, "maxLength": 128 },
-        "repository": {
-          "type": "string",
-          "pattern": "^https://github\\.com/[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?/(?!\\.{1,2}/?$)[A-Za-z0-9._-]{1,100}/?$",
-          "maxLength": 512
-        },
-        "package": { "$ref": "#/$defs/packageName" },
-        "release": { "$ref": "#/$defs/semver" },
-        "status": { "enum": ["active", "deprecated", "archived"] }
-      }
+    "$schema": {
+      "const": "https://raw.githubusercontent.com/oh-my-dsh/dsh-plugin-registry/main/registry/schema/plugin-index.schema.json"
     },
-    "source": {
+    "schemaVersion": { "const": 2 },
+    "contract": { "const": "dsh-plugin-registry/v2" },
+    "source": { "const": "registry/entries" },
+    "plugins": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/indexEntry" }
+    }
+  },
+  "$defs": {
+    "indexEntry": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["commit", "namingManifest"],
+      "required": ["schemaVersion", "plugin", "source", "compatibility", "claims", "manifestPath"],
       "properties": {
-        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
-        "namingManifest": {
+        "$schema": { "type": "string", "minLength": 1 },
+        "schemaVersion": { "const": 2 },
+        "plugin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "repository", "package", "status"],
+          "properties": {
+            "id": { "$ref": "#/$defs/coordinate" },
+            "displayName": { "type": "string", "minLength": 1, "maxLength": 128 },
+            "repository": {
+              "type": "string",
+              "pattern": "^https://github\\.com/[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?/(?!\\.{1,2}/?$)[A-Za-z0-9._-]{1,100}/?$",
+              "maxLength": 512
+            },
+            "package": { "$ref": "#/$defs/packageName" },
+            "release": { "$ref": "#/$defs/semver" },
+            "status": { "enum": ["active", "deprecated", "archived"] }
+          }
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["commit", "namingManifest"],
+          "properties": {
+            "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+            "namingManifest": {
+              "type": "string",
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//)[^\\u0000-\\u001f\\u007f\\\\?#]+\\.json$",
+              "maxLength": 512
+            }
+          }
+        },
+        "compatibility": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["harness"],
+          "properties": {
+            "harness": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["min"],
+              "properties": {
+                "min": { "$ref": "#/$defs/semver" },
+                "maxExclusive": { "$ref": "#/$defs/semver" }
+              }
+            }
+          }
+        },
+        "claims": { "$ref": "#/$defs/claims" },
+        "manifestPath": {
           "type": "string",
           "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//)[^\\u0000-\\u001f\\u007f\\\\?#]+\\.json$",
           "maxLength": 512
-        }
-      }
-    },
-    "compatibility": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["harness"],
-      "properties": {
-        "harness": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["min"],
-          "properties": {
-            "min": { "$ref": "#/$defs/semver" },
-            "maxExclusive": { "$ref": "#/$defs/semver" }
-          }
         }
       }
     },
@@ -147,9 +172,7 @@
           }
         }
       }
-    }
-  },
-  "$defs": {
+    },
     "coordinate": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*/[a-z0-9]+(?:-[a-z0-9]+)*$",

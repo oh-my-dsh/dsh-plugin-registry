@@ -14,6 +14,10 @@
 普通误报、漏报和冲突语义建议可以使用公开 Issue，并附最小 JSON 夹具、Harness 版本和预期
 scope。注册表不接收私有插件源码；复现材料应删去密钥和专有数据。
 
+注册索引与固定命名清单都是不可信 JSON 输入。客户端必须执行契约检查、有界读取、完整 entry
+校验以及重复身份/路径拒绝。解析、Schema、网络、超时或大小失败必须保持为明确的“未知/未检查”，
+不能解释为名称可用。
+
 ---
 
 # English
@@ -34,3 +38,7 @@ in a public Issue.
 Ordinary false positives, missed conflicts, and semantic proposals may use a public Issue with a minimal
 JSON fixture, Harness version, and expected scope. The registry does not accept private plugin source;
 remove secrets and proprietary data from all reproduction material.
+
+Registry indexes and pinned naming manifests are untrusted JSON inputs. Clients must enforce the declared
+contract, bounded reads, complete entry validation, and duplicate identity/path rejection. Parse, schema,
+network, timeout, or size failures must remain an explicit unknown/not-checked result, never an available-name result.
