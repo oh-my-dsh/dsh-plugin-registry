@@ -5,6 +5,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import {
   REGISTRY_CONTRACT,
+  REGISTRY_INDEX_SCHEMA,
   checkManifestAgainstIndex,
   checkResultExitCode,
   compareSemver,
@@ -13,7 +14,9 @@ import {
   harnessRangesOverlap,
   loadRegistry,
   parseSemver,
+  readIndexSource,
   searchIndex,
+  validateIndex,
   validateManifest,
   validateRegistry,
   verifyManifestSource,
@@ -95,17 +98,19 @@ async function writeEntry(registryRoot, value) {
   await writeFile(file, `${JSON.stringify(value, null, 2)}\n`)
 }
 
-function response(value, status = 200) {
+function response(value, status = 200, headers = {}) {
   return new Response(typeof value === 'string' ? value : JSON.stringify(value), {
     status,
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', ...headers },
   })
 }
 
 export async function runPluginRegistryChecks() {
   assert(parseSemver('0.1.2-alpha.2'))
+  assert.equal(parseSemver('0.1.2-alpha.01'), undefined)
   assert.equal(compareSemver('0.1.2-alpha.2', '0.1.2'), -1)
   assert.equal(compareSemver('0.1.2-alpha.10', '0.1.2-alpha.2'), 1)
+  assert.equal(compareSemver('9007199254740993.0.0', '9007199254740992.0.0'), 1)
   assert.equal(compareSemver('1.0.0+build.1', '1.0.0+build.2'), 0)
   assert.equal(
     harnessRangesOverlap(
@@ -133,8 +138,56 @@ export async function runPluginRegistryChecks() {
     const loaded = await loadRegistry(registryRoot)
     assert.deepEqual(loaded.errors, [])
     const index = createIndex(loaded.records)
+    assert.equal(index.$schema, REGISTRY_INDEX_SCHEMA)
     assert.equal(index.contract, REGISTRY_CONTRACT)
     assert.deepEqual(index.plugins.map((entry) => entry.plugin.id), ['alice/search', 'bob/search'])
+    assert.deepEqual(validateIndex(index), [])
+
+    const invalidIndexes = [
+      ['contract', { ...structuredClone(index), contract: 'dsh-plugin-registry/v3' }],
+      ['source', { ...structuredClone(index), source: 'discovery/candidates.json' }],
+      ['schema', { ...structuredClone(index), $schema: 'https://example.invalid/index.schema.json' }],
+      ['unknown field', { ...structuredClone(index), unexpected: true }],
+    ]
+    for (const [label, invalidIndex] of invalidIndexes) {
+      assert(validateIndex(invalidIndex).length > 0, `expected invalid index ${label} to be rejected`)
+      await assert.rejects(
+        readIndexSource({ registryUrl: 'https://registry.invalid/index.json', fetchImpl: async () => response(invalidIndex) }),
+      )
+    }
+
+    const duplicateIdentityIndex = structuredClone(index)
+    duplicateIdentityIndex.plugins.push(structuredClone(index.plugins[0]))
+    assert(validateIndex(duplicateIdentityIndex).some((entry) => entry.message.includes('duplicates index.plugins[0].plugin.id')))
+    assert.throws(
+      () => createIndex([...loaded.records, loaded.records[0]]),
+      /cannot create invalid registry index/,
+    )
+
+    const duplicatePathIndex = structuredClone(index)
+    duplicatePathIndex.plugins[1].manifestPath = duplicatePathIndex.plugins[0].manifestPath
+    const duplicatePathErrors = validateIndex(duplicatePathIndex)
+    assert(duplicatePathErrors.some((entry) => entry.path.endsWith('.manifestPath') && entry.message.includes('duplicates')))
+
+    const legacyIndex = structuredClone(index)
+    delete legacyIndex.$schema
+    legacyIndex.plugins[0].manifestPath = 'snapshots/alice-search.json'
+    legacyIndex.plugins[0].$schema = 'https://example.invalid/registration-v2.schema.json'
+    assert.deepEqual(validateIndex(legacyIndex), [], 'legacy v2 indexes may omit index $schema and include entry $schema')
+
+    const malformedEntryIndex = structuredClone(index)
+    malformedEntryIndex.plugins[0].plugin.status = 'unknown'
+    malformedEntryIndex.plugins[0].plugin.repository = 'http://github.com/alice/dsh-search'
+    malformedEntryIndex.plugins[0].plugin.package = 'https://registry.invalid/package.tgz'
+    malformedEntryIndex.plugins[0].source.namingManifest = '../dsh-plugin.naming.json'
+    malformedEntryIndex.plugins[0].claims.services = [{ name: 123, scope: 'root', extra: true }]
+    malformedEntryIndex.plugins[0].unexpected = true
+    const malformedEntryErrors = validateIndex(malformedEntryIndex)
+    for (const suffix of ['.plugin.status', '.plugin.repository', '.plugin.package', '.source.namingManifest']) {
+      assert(malformedEntryErrors.some((entry) => entry.path.endsWith(suffix)), `expected ${suffix} error`)
+    }
+    assert(malformedEntryErrors.some((entry) => entry.path.endsWith('.claims.services[0].extra')))
+    assert(malformedEntryErrors.some((entry) => entry.path.endsWith('.unexpected')))
 
     const conflicts = detectClaimConflicts(index.plugins)
     for (const kind of ['commands', 'events', 'loaderIds', 'routes', 'services', 'skillProviders', 'skills', 'settingsNamespaces']) {
@@ -145,6 +198,38 @@ export async function runPluginRegistryChecks() {
     assert.equal(conflicts.find((entry) => entry.kind === 'skills').severity, 'notice')
     assert.equal(conflicts.find((entry) => entry.kind === 'events').severity, 'warning')
     assert(!conflicts.some((entry) => entry.kind === 'pluginNames'), 'plugin module names are not global claims')
+
+    const unicodeAlice = manifest('alice', 'unicode', {
+      claims: {
+        loaderIds: [{ name: 'alice-unicode-loader', composition: 'root', layer: 0, overrideIntent: 'none' }],
+        services: [{ name: '\u4e2d', scope: 'root' }, { name: '\u03a9', scope: 'root' }],
+        tools: [],
+        commands: [],
+        skills: [],
+        skillProviders: [],
+        events: [],
+        settingsNamespaces: [],
+        routes: [],
+      },
+    })
+    const unicodeBob = manifest('bob', 'unicode', {
+      claims: {
+        loaderIds: [{ name: 'bob-unicode-loader', composition: 'root', layer: 0, overrideIntent: 'none' }],
+        services: [{ name: '\u03a9', scope: 'root' }, { name: '\u4e2d', scope: 'root' }],
+        tools: [],
+        commands: [],
+        skills: [],
+        skillProviders: [],
+        events: [],
+        settingsNamespaces: [],
+        routes: [],
+      },
+    })
+    assert.deepEqual(
+      detectClaimConflicts([unicodeAlice, unicodeBob]).filter((entry) => entry.kind === 'services').map((entry) => entry.claim),
+      ['\u03a9', '\u4e2d'],
+      'conflict ordering must use deterministic UTF-16 code-unit order, independent of host locale',
+    )
 
     const compatibleEvent = manifest('carol', 'search', {
       claims: {
@@ -220,6 +305,13 @@ export async function runPluginRegistryChecks() {
       compatibility: { harness: { min: '0.2.0', maxExclusive: '0.1.0' } },
     })
     assert(validateManifest(invalidRange).some((entry) => entry.message.includes('greater than min')))
+    for (const invalidManifest of [
+      manifest('erin', 'search', { plugin: { package: 'https://example.invalid/plugin.tgz' } }),
+      manifest('erin', 'search', { plugin: { release: '1.0.0-alpha.01' } }),
+      manifest('erin', 'search', { compatibility: { harness: { min: '0.1.2-alpha.01' } } }),
+      manifest('erin', 'search', { source: { namingManifest: './dsh-plugin.naming.json' } }),
+      manifest('erin', 'search', { plugin: { status: 'pending' } }),
+    ]) assert(validateManifest(invalidManifest).length > 0)
 
     const source = namingManifest(alice)
     assert.deepEqual(
@@ -238,6 +330,62 @@ export async function runPluginRegistryChecks() {
       file: 'alice.json',
     })
     assert(unavailable.some((entry) => entry.message.includes('HTTP 404')))
+    const malformedSource = namingManifest(alice)
+    malformedSource.unexpected = true
+    malformedSource.names.tools = [123]
+    const malformedSourceErrors = await verifyManifestSource(alice, {
+      fetchImpl: async () => response(malformedSource),
+      file: 'alice.json',
+    })
+    assert(malformedSourceErrors.some((entry) => entry.path.endsWith('.unexpected')))
+    assert(malformedSourceErrors.some((entry) => entry.path.endsWith('.names.tools[0]')))
+    const oversizedSourceErrors = await verifyManifestSource(alice, {
+      fetchImpl: async () => response(' '.repeat(1024 * 1024 + 1)),
+      file: 'alice.json',
+    })
+    assert(oversizedSourceErrors.some((entry) => entry.message.includes('exceeds 1048576 bytes')))
+
+    const oversizedPath = join(root, 'oversized-index.json')
+    await writeFile(oversizedPath, ' '.repeat(5 * 1024 * 1024 + 1))
+    await assert.rejects(readIndexSource({ indexPath: oversizedPath }), /exceeds 5242880 bytes/)
+    await assert.rejects(
+      readIndexSource({
+        registryUrl: 'https://registry.invalid/index.json',
+        fetchImpl: async () => response(' '.repeat(5 * 1024 * 1024 + 1)),
+      }),
+      /exceeds 5242880 bytes/,
+    )
+    for (const contentLength of ['not-a-number', '-1', '9007199254740992']) {
+      await assert.rejects(
+        readIndexSource({
+          registryUrl: 'https://registry.invalid/index.json',
+          fetchImpl: async () => response(index, 200, { 'content-length': contentLength }),
+        }),
+        /invalid Content-Length header/,
+      )
+    }
+    const invalidUtf8Path = join(root, 'invalid-utf8-index.json')
+    await writeFile(invalidUtf8Path, Buffer.from([0xc3, 0x28]))
+    await assert.rejects(readIndexSource({ indexPath: invalidUtf8Path }), /encoded data was not valid/)
+    let unsafeFallbackRead = false
+    await assert.rejects(
+      readIndexSource({
+        registryUrl: 'https://registry.invalid/index.json',
+        fetchImpl: async () => ({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          headers: { get: () => null },
+          body: null,
+          text: async () => {
+            unsafeFallbackRead = true
+            return JSON.stringify(index)
+          },
+        }),
+      }),
+      /bounded fallback refused/,
+    )
+    assert.equal(unsafeFallbackRead, false, 'non-stream responses must fail closed without unbounded buffering')
 
     const examplesRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'registry', 'examples')
     const exampleRegistration = JSON.parse(await readFile(join(examplesRoot, 'plugin-registration.example.json'), 'utf8'))
@@ -259,9 +407,13 @@ export async function runPluginRegistryChecks() {
     const schemaPath = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'registry', 'schema', 'plugin-registration.schema.json')
     const schema = JSON.parse(await readFile(schemaPath, 'utf8'))
     assert.equal(schema.properties.schemaVersion.const, 2)
+    assert.equal(schema.$id, 'https://raw.githubusercontent.com/oh-my-dsh/dsh-plugin-registry/main/registry/schema/plugin-registration.schema.json')
     assert.deepEqual(schema.properties.claims.required, sourceSurfaceNamesForTest())
     assert.deepEqual(schema.properties.claims.properties.routes.items.properties.kind.enum, ['exact', 'prefix', 'upgrade'])
     assert(!Object.hasOwn(schema.properties.claims.properties, 'ports'))
+    const indexSchema = JSON.parse(await readFile(join(dirname(schemaPath), 'plugin-index.schema.json'), 'utf8'))
+    assert.equal(indexSchema.$id, REGISTRY_INDEX_SCHEMA)
+    assert(!indexSchema.required.includes('$schema'), 'index $schema remains optional for legacy v2 clients')
   } finally {
     await rm(root, { recursive: true, force: true })
   }

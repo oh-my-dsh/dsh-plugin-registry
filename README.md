@@ -36,6 +36,12 @@ https://raw.githubusercontent.com/oh-my-dsh/dsh-plugin-registry/main/registry/in
 设置超时与响应大小上限，并允许用户覆盖 URL。Raw GitHub 可能存在短时缓存，因此查询结果
 必须显示来源和状态，不能声称提供实时全局锁。
 
+生成的索引通过 `$schema` 声明
+`registry/schema/plugin-index.schema.json` 的官方 Raw URL。为兼容早期 v2 快照，客户端可接受
+缺少 `$schema` 的索引；字段存在时必须精确匹配官方 URL。索引及每个 entry 的未知字段、非法
+状态、来源、包名、SemVer、声明结构、重复 `plugin.id` 或 `manifestPath` 都必须导致“未知/未检查”，
+不能降格为无冲突。本仓库 CLI 对本地和远程索引统一执行 5 MiB 上限。
+
 克隆仓库后可以精确查询：
 
 ```sh

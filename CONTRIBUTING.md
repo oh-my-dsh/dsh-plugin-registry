@@ -24,6 +24,10 @@ npm run validate:sources
 `pluginNames` 与同名 event 不是排他占用；端口不得登记。普通上下文冲突是审核信息，身份冒用、
 无效清单、来源不一致、错误路径和过期索引不能合并。
 
+`registry/index.json` 只能由 `npm run build:index` 生成。修改 entry 或索引契约时必须同步
+`plugin-registration.schema.json`、`plugin-index.schema.json`、生成器和拒绝边界测试；不要手工
+放宽未知字段、重复身份/路径、固定来源或 SemVer 校验。
+
 ## 候选转正式登记
 
 `discovery/candidates.json` 中的记录只用于调查。晋级前必须确认固定 commit 上存在真实 DSH
