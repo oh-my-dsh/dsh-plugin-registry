@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema/plugin-registration.schema.json",
+  "schemaVersion": 2,
+  "plugin": {
+    "id": "dongsheng123132/workspace-hub",
+    "displayName": "Workspace Hub",
+    "repository": "https://github.com/dongsheng123132/dsh-workspace-plugins",
+    "package": "dsh-plugin-workspace-hub",
+    "release": "0.3.6",
+    "status": "active"
+  },
+  "source": {
+    "commit": "bc26974b258047107a736cda099f30cb3e461ac2",
+    "namingManifest": "plugins/dsh-workspace-hub/dsh-plugin.naming.json"
+  },
+  "compatibility": {
+    "harness": {
+      "min": "0.2.1-rc.5"
+    }
+  },
+  "claims": {
+    "pluginNames": [
+      "workspace-hub"
+    ],
+    "loaderIds": [
+      {
+        "name": "wshub-workspace-hub",
+        "composition": "root",
+        "layer": 0,
+        "overrideIntent": "none"
+      }
+    ],
+    "services": [
+      {
+        "name": "wshubWorkspaceHub",
+        "scope": "root"
+      }
+    ],
+    "tools": [
+      {
+        "name": "workspace_hub_list",
+        "scope": "agent"
+      },
+      {
+        "name": "workspace_hub_sync",
+        "scope": "agent"
+      },
+      {
+        "name": "workspace_hub_refresh",
+        "scope": "agent"
+      },
+      {
+        "name": "workspace_hub_remote_sync",
+        "scope": "agent"
+      }
+    ],
+    "commands": [],
+    "skills": [],
+    "skillProviders": [],
+    "events": [],
+    "settingsNamespaces": [],
+    "routes": []
+  }
+}

@@ -2,5 +2,123 @@
   "schemaVersion": 2,
   "contract": "dsh-plugin-registry/v2",
   "source": "registry/entries",
-  "plugins": []
+  "plugins": [
+    {
+      "schemaVersion": 2,
+      "plugin": {
+        "id": "dongsheng123132/workspace-hub",
+        "displayName": "Workspace Hub",
+        "repository": "https://github.com/dongsheng123132/dsh-workspace-plugins",
+        "package": "dsh-plugin-workspace-hub",
+        "release": "0.3.6",
+        "status": "active"
+      },
+      "source": {
+        "commit": "bc26974b258047107a736cda099f30cb3e461ac2",
+        "namingManifest": "plugins/dsh-workspace-hub/dsh-plugin.naming.json"
+      },
+      "compatibility": {
+        "harness": {
+          "min": "0.2.1-rc.5"
+        }
+      },
+      "claims": {
+        "pluginNames": [
+          "workspace-hub"
+        ],
+        "loaderIds": [
+          {
+            "name": "wshub-workspace-hub",
+            "composition": "root",
+            "layer": 0,
+            "overrideIntent": "none"
+          }
+        ],
+        "services": [
+          {
+            "name": "wshubWorkspaceHub",
+            "scope": "root"
+          }
+        ],
+        "tools": [
+          {
+            "name": "workspace_hub_list",
+            "scope": "agent"
+          },
+          {
+            "name": "workspace_hub_sync",
+            "scope": "agent"
+          },
+          {
+            "name": "workspace_hub_refresh",
+            "scope": "agent"
+          },
+          {
+            "name": "workspace_hub_remote_sync",
+            "scope": "agent"
+          }
+        ],
+        "commands": [],
+        "skills": [],
+        "skillProviders": [],
+        "events": [],
+        "settingsNamespaces": [],
+        "routes": []
+      },
+      "manifestPath": "registry/entries/dongsheng123132/workspace-hub.json"
+    },
+    {
+      "schemaVersion": 2,
+      "plugin": {
+        "id": "dongsheng123132/workspace-move-top",
+        "displayName": "Move to Top",
+        "repository": "https://github.com/dongsheng123132/dsh-workspace-plugins",
+        "package": "dsh-plugin-workspace-move-top",
+        "release": "0.2.1",
+        "status": "active"
+      },
+      "source": {
+        "commit": "bc26974b258047107a736cda099f30cb3e461ac2",
+        "namingManifest": "plugins/dsh-workspace-move-top/dsh-plugin.naming.json"
+      },
+      "compatibility": {
+        "harness": {
+          "min": "0.2.1-rc.5"
+        }
+      },
+      "claims": {
+        "pluginNames": [
+          "workspace-move-top"
+        ],
+        "loaderIds": [
+          {
+            "name": "wshub-workspace-move-top",
+            "composition": "root",
+            "layer": 0,
+            "overrideIntent": "none"
+          }
+        ],
+        "services": [
+          {
+            "name": "wshubWorkspaceMoveTop",
+            "scope": "root"
+          }
+        ],
+        "tools": [],
+        "commands": [],
+        "skills": [],
+        "skillProviders": [],
+        "events": [],
+        "settingsNamespaces": [],
+        "routes": [
+          {
+            "kind": "exact",
+            "path": "/api/plugins/wshub-workspace-move-top/move",
+            "scope": "root"
+          }
+        ]
+      },
+      "manifestPath": "registry/entries/dongsheng123132/workspace-move-top.json"
+    }
+  ]
 }
