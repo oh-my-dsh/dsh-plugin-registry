@@ -1,0 +1,53 @@
+{
+  "$schema": "../schema/plugin-registration.schema.json",
+  "schemaVersion": 2,
+  "plugin": {
+    "id": "dongsheng123132/workspace-move-top",
+    "displayName": "Move to Top",
+    "repository": "https://github.com/dongsheng123132/dsh-workspace-plugins",
+    "package": "dsh-plugin-workspace-move-top",
+    "release": "0.2.1",
+    "status": "active"
+  },
+  "source": {
+    "commit": "bc26974b258047107a736cda099f30cb3e461ac2",
+    "namingManifest": "plugins/dsh-workspace-move-top/dsh-plugin.naming.json"
+  },
+  "compatibility": {
+    "harness": {
+      "min": "0.2.1-rc.5"
+    }
+  },
+  "claims": {
+    "pluginNames": [
+      "workspace-move-top"
+    ],
+    "loaderIds": [
+      {
+        "name": "wshub-workspace-move-top",
+        "composition": "root",
+        "layer": 0,
+        "overrideIntent": "none"
+      }
+    ],
+    "services": [
+      {
+        "name": "wshubWorkspaceMoveTop",
+        "scope": "root"
+      }
+    ],
+    "tools": [],
+    "commands": [],
+    "skills": [],
+    "skillProviders": [],
+    "events": [],
+    "settingsNamespaces": [],
+    "routes": [
+      {
+        "kind": "exact",
+        "path": "/api/plugins/wshub-workspace-move-top/move",
+        "scope": "root"
+      }
+    ]
+  }
+}
