@@ -2,5 +2,54 @@
   "schemaVersion": 2,
   "contract": "dsh-plugin-registry/v2",
   "source": "registry/entries",
-  "plugins": []
+  "plugins": [
+    {
+      "schemaVersion": 2,
+      "plugin": {
+        "id": "dongsheng123132/project-gallery",
+        "displayName": "项目相册 Project Gallery",
+        "repository": "https://github.com/dongsheng123132/dsh-project-gallery",
+        "package": "dsh-project-gallery",
+        "release": "0.1.2",
+        "status": "active"
+      },
+      "source": {
+        "commit": "31ffa7d873196e442e9b82f422d057753a776297",
+        "namingManifest": "dsh-plugin.naming.json"
+      },
+      "compatibility": {
+        "harness": {
+          "min": "0.2.1-rc.5"
+        }
+      },
+      "claims": {
+        "pluginNames": [
+          "dsh-session-gallery"
+        ],
+        "loaderIds": [
+          {
+            "name": "dsh-project-gallery",
+            "composition": "root",
+            "layer": 0,
+            "overrideIntent": "none"
+          }
+        ],
+        "services": [],
+        "tools": [],
+        "commands": [],
+        "skills": [],
+        "skillProviders": [],
+        "events": [],
+        "settingsNamespaces": [],
+        "routes": [
+          {
+            "kind": "prefix",
+            "path": "/session-gallery",
+            "scope": "root"
+          }
+        ]
+      },
+      "manifestPath": "registry/entries/dongsheng123132/project-gallery.json"
+    }
+  ]
 }
